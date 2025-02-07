@@ -1,0 +1,81 @@
+<?php
+// Include database connection
+include 'db_connection.php';
+
+// Function to sanitize inputs
+function sanitize_input($data) {
+    return htmlspecialchars(stripslashes(trim($data)));
+}
+
+// Check if data is being sent via POST
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Collect and sanitize form inputs
+    $college_name = sanitize_input($_POST['name']);
+    $location = sanitize_input($_POST['location']);
+    $budget = sanitize_input($_POST['budget']);
+    $courses = sanitize_input($_POST['courses']);
+    $placement = sanitize_input($_POST['placement']);
+    $specialization = sanitize_input($_POST['specialization']);
+    $ranking = sanitize_input($_POST['ranking']);
+    $facilities = sanitize_input($_POST['facilities']);
+    $usp = sanitize_input($_POST['usp']);
+
+    // Check if college ID exists (for update scenario)
+    if (isset($_POST['id']) && !empty($_POST['id'])) {
+        $college_id = sanitize_input($_POST['id']);
+        
+        // Update query for existing college
+        $sql = "UPDATE colleges SET 
+                name = ?, 
+                location = ?, 
+                budget = ?, 
+                courses = ?, 
+                placement = ?, 
+                specialization = ?, 
+                ranking = ?, 
+                facilities = ?, 
+                usp = ? 
+                WHERE id = ?";
+        
+        // Prepare statement
+        if ($stmt = $conn->prepare($sql)) {
+            // Bind parameters and execute
+            $stmt->bind_param("ssissssssi", $college_name, $location, $budget, $courses, $placement, $specialization, $ranking, $facilities, $usp, $college_id);
+            
+            if ($stmt->execute()) {
+                // Success message
+                echo json_encode(["message" => "College updated successfully."]);
+            } else {
+                // Error message
+                echo json_encode(["message" => "Error updating college. Please try again."]);
+            }
+            
+            $stmt->close();
+        }
+    } else {
+        // Insert query for new college
+        $sql = "INSERT INTO colleges (name, location, budget, courses, placement, specialization, ranking, facilities, usp)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        // Prepare statement
+        if ($stmt = $conn->prepare($sql)) {
+            // Bind parameters and execute
+            $stmt->bind_param("ssissssss", $college_name, $location, $budget, $courses, $placement, $specialization, $ranking, $facilities, $usp);
+            
+            if ($stmt->execute()) {
+                // Success message
+                echo json_encode(["message" => "New college added successfully."]);
+            } else {
+                // Error message
+                echo json_encode(["message" => "Error adding college. Please try again."]);
+            }
+            
+            $stmt->close();
+        }
+    }
+}
+
+// Close the connection
+$conn->close();
+?>
+

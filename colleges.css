@@ -1,0 +1,57 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.filter-section {
+    margin-bottom: 20px;
+}
+
+.filter-button {
+    padding: 10px;
+    margin-right: 10px;
+    background-color: #f0f0f0;
+    border: none;
+    cursor: pointer;
+}
+
+.filter-button.selected {
+    background-color: #4CAF50;
+    color: white;
+}
+
+#reset-filters {
+    padding: 10px;
+    background-color: #f0f0f0;
+    border: none;
+    cursor: pointer;
+}
+
+.results-section {
+    margin-top: 20px;
+}
+
+.college-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+}
+
+.college-card h3 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.college-card button {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.college-card button:hover {
+    background-color: #45a049;
+}
+

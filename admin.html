@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Admin Panel</title>
+    <link rel="stylesheet" href="admin.css"> <!-- Add your styles here -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>College Admin Panel</h1>
+
+        <!-- Form to add or update college -->
+        <div class="form-container">
+            <h2>Add/Update College</h2>
+            <form id="college-form">
+                <div class="form-group">
+                    <label for="college-name">College Name</label>
+                    <input type="text" id="college-name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="college-location">Location</label>
+                    <input type="text" id="college-location" name="location" required>
+                </div>
+                <div class="form-group">
+                    <label for="college-budget">Budget</label>
+                    <input type="number" id="college-budget" name="budget" required>
+                </div>
+                <div class="form-group">
+                    <label for="college-courses">Courses</label>
+                    <input type="text" id="college-courses" name="courses" required>
+                </div>
+                <div class="form-group">
+                    <label for="college-placement">Placement</label>
+                    <input type="text" id="college-placement" name="placement">
+                </div>
+                <div class="form-group">
+                    <label for="college-specialization">Specialization</label>
+                    <input type="text" id="college-specialization" name="specialization">
+                </div>
+                <div class="form-group">
+                    <label for="college-ranking">Ranking</label>
+                    <input type="text" id="college-ranking" name="ranking">
+                </div>
+                <div class="form-group">
+                    <label for="college-facilities">Facilities</label>
+                    <input type="text" id="college-facilities" name="facilities">
+                </div>
+                <div class="form-group">
+                    <label for="college-usp">USP</label>
+                    <input type="text" id="college-usp" name="usp">
+                </div>
+                <button type="button" id="submit-college">Save College</button>
+            </form>
+        </div>
+
+        <!-- College table to display existing colleges -->
+        <div class="college-list">
+            <h2>Existing Colleges</h2>
+            <table id="college-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Budget</th>
+                        <th>Courses</th>
+                        <th>Placement</th>
+                        <th>Specialization</th>
+                        <th>Ranking</th>
+                        <th>Facilities</th>
+                        <th>USP</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- College records will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const submitCollegeButton = document.getElementById("submit-college");
+            const collegeTable = document.getElementById("college-table").getElementsByTagName("tbody")[0];
+            let editingCollegeId = null;
+
+            // Handle form submission to add or update college
+            submitCollegeButton.addEventListener("click", function () {
+                const collegeData = {
+                    name: document.getElementById("college-name").value,
+                    location: document.getElementById("college-location").value,
+                    budget: document.getElementById("college-budget").value,
+                    courses: document.getElementById("college-courses").value,
+                    placement: document.getElementById("college-placement").value,
+                    specialization: document.getElementById("college-specialization").value,
+                    ranking: document.getElementById("college-ranking").value,
+                    facilities: document.getElementById("college-facilities").value,
+                    usp: document.getElementById("college-usp").value
+                };
+
+                // Include college_id if updating
+                if (editingCollegeId) {
+                    collegeData.id = editingCollegeId;
+                }
+
+                fetch("save_college.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: new URLSearchParams(collegeData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    clearForm();
+                    fetchColleges(); // Refresh the college list
+                });
+            });
+
+            // Fetch and display existing colleges
+            function fetchColleges() {
+                fetch("fetch_all_colleges.php")
+                    .then(response => response.json())
+                    .then(data => {
+                        collegeTable.innerHTML = "";
+                        data.forEach(college => {
+                            const row = collegeTable.insertRow();
+                            row.innerHTML = `
+                                <td>${college.name}</td>
+                                <td>${college.location}</td>
+                                <td>${college.budget}</td>
+                                <td>${college.courses}</td>
+                                <td>${college.placement}</td>
+                                <td>${college.specialization}</td>
+                                <td>${college.ranking}</td>
+                                <td>${college.facilities}</td>
+                                <td>${college.usp}</td>
+                                <td>
+                                    <button class="edit" data-id="${college.college_id}">Edit</button>
+                                    <button class="delete" data-id="${college.college_id}">Delete</button>
+                                </td>
+                            `;
+                        });
+                        attachEditDeleteEvents();
+                    });
+            }
+
+            // Attach Edit and Delete events to the buttons
+            function attachEditDeleteEvents() {
+                document.querySelectorAll(".edit").forEach(button => {
+                    button.addEventListener("click", function () {
+                        const collegeId = this.dataset.id;
+                        fetch(`get_college.php?id=${collegeId}`)
+                            .then(response => response.json())
+                            .then(college => {
+                                // Populate the form with existing college data
+                                document.getElementById("college-name").value = college.name;
+                                document.getElementById("college-location").value = college.location;
+                                document.getElementById("college-budget").value = college.budget;
+                                document.getElementById("college-courses").value = college.courses;
+                                document.getElementById("college-placement").value = college.placement;
+                                document.getElementById("college-specialization").value = college.specialization;
+                                document.getElementById("college-ranking").value = college.ranking;
+                                document.getElementById("college-facilities").value = college.facilities;
+                                document.getElementById("college-usp").value = college.usp;
+                                editingCollegeId = college.college_id; // Set the college_id for editing
+                                submitCollegeButton.innerText = "Update College"; // Change button text to "Update"
+                            });
+                    });
+                });
+
+                document.querySelectorAll(".delete").forEach(button => {
+                    button.addEventListener("click", function () {
+                        const collegeId = this.dataset.id;
+                        if (confirm("Are you sure you want to delete this college?")) {
+                            fetch("delete_college.php", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                body: `id=${collegeId}`
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                alert(data.message);
+                                fetchColleges(); // Refresh the college list
+                            });
+                        }
+                    });
+                });
+            }
+
+            // Clear form fields after submission
+            function clearForm() {
+                document.getElementById("college-name").value = '';
+                document.getElementById("college-location").value = '';
+                document.getElementById("college-budget").value = '';
+                document.getElementById("college-courses").value = '';
+                document.getElementById("college-placement").value = '';
+                document.getElementById("college-specialization").value = '';
+                document.getElementById("college-ranking").value = '';
+                document.getElementById("college-facilities").value = '';
+                document.getElementById("college-usp").value = '';
+                editingCollegeId = null;
+                submitCollegeButton.innerText = "Save College"; // Reset button text to "Save"
+            }
+
+            // Initialize by fetching the existing colleges
+            fetchColleges();
+        });
+    </script>
+</body>
+</html>
+

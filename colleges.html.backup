@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Filtering System</title>
+    <style>
+        /* Basic styles for the college filtering system */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .filter-section {
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .filter-button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .filter-button.selected {
+            background-color: #28a745;
+        }
+        .results-container {
+            padding: 20px;
+        }
+        .college-card {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .bookmark-button {
+            background-color: #ffc107;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #reset-filters {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="filter-section">
+        <h2>Filter Colleges</h2>
+        <div class="filter-buttons">
+            <button class="filter-button" data-filter-type="location" data-filter-value="New York">New York</button>
+            <button class="filter-button" data-filter-type="location" data-filter-value="California">California</button>
+            <button class="filter-button" data-filter-type="budget" data-filter-value="50000">Budget <= 50000</button>
+            <button class="filter-button" data-filter-type="budget" data-filter-value="100000">Budget <= 100000</button>
+            <button class="filter-button" data-filter-type="courses" data-filter-value="Engineering">Engineering</button>
+            <button class="filter-button" data-filter-type="courses" data-filter-value="Business">Business</button>
+            <button class="filter-button" data-filter-type="specialization" data-filter-value="AI">AI</button>
+            <button class="filter-button" data-filter-type="specialization" data-filter-value="Data Science">Data Science</button>
+        </div>
+        <button id="reset-filters">Reset Filters</button>
+    </div>
+
+    <div class="results-container" id="results">
+        <!-- Results will be dynamically inserted here -->
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const filterButtons = document.querySelectorAll(".filter-button");
+            const resetButton = document.getElementById("reset-filters");
+            const resultsContainer = document.getElementById("results");
+            let filters = {};
+
+            filterButtons.forEach(button => {
+                button.addEventListener("click", function () {
+                    const filterType = this.dataset.filterType;
+                    const filterValue = this.dataset.filterValue;
+
+                    // Toggle selected filter
+                    if (filters[filterType] === filterValue) {
+                        delete filters[filterType];
+                        this.classList.remove("selected");
+                    } else {
+                        filters[filterType] = filterValue;
+                        this.classList.add("selected");
+                    }
+                    fetchFilteredColleges();
+                });
+            });
+
+            resetButton.addEventListener("click", function () {
+                filters = {};
+                filterButtons.forEach(button => button.classList.remove("selected"));
+                fetchFilteredColleges();
+            });
+
+            function fetchFilteredColleges() {
+                let queryString = Object.keys(filters).map(key => `${key}=${encodeURIComponent(filters[key])}`).join("&");
+
+                fetch(`fetch_colleges.php?${queryString}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsContainer.innerHTML = "";
+                        data.forEach(college => {
+                            let collegeCard = document.createElement("div");
+                            collegeCard.classList.add("college-card");
+                            collegeCard.innerHTML = `
+                                <h3>${college.name}</h3>
+                                <p><strong>Location:</strong> ${college.location}</p>
+                                <p><strong>Budget:</strong> ${college.budget}</p>
+                                <p><strong>Courses:</strong> ${college.courses}</p>
+                                <p><strong>Placement:</strong> ${college.placement}</p>
+                                <p><strong>Specialization:</strong> ${college.specialization}</p>
+                                <p><strong>Ranking:</strong> ${college.ranking}</p>
+                                <p><strong>Facilities:</strong> ${college.facilities}</p>
+                                <p><strong>USP:</strong> ${college.usp}</p>
+                                <button class="bookmark-button" data-id="${college.id}">Bookmark</button>
+                            `;
+                            resultsContainer.appendChild(collegeCard);
+                        });
+                        attachBookmarkEvents();
+                    });
+            }
+
+            function attachBookmarkEvents() {
+                document.querySelectorAll(".bookmark-button").forEach(button => {
+                    button.addEventListener("click", function () {
+                        let collegeId = this.dataset.id;
+                        fetch("manage_bookmarks.php", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: `college_id=${collegeId}`
+                        })
+                        .then(response => response.json())
+                        .then(data => alert(data.message));
+                    });
+                });
+            }
+
+            fetchFilteredColleges();
+        });
+    </script>
+
+</body>
+</html>
+
