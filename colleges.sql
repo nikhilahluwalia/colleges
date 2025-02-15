@@ -1,6 +1,6 @@
 -- Database Schema for College Filtering System
 
-CREATE DATABASE college_directory;
+
 USE college_directory;
 
 -- Colleges Table
@@ -46,4 +46,5 @@ CREATE TABLE admin_manage_colleges (
     action_type VARCHAR(100) NOT NULL,
     details TEXT NOT NULL
 );
+
 

@@ -1,81 +1,61 @@
 <?php
-// Include database connection
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 include 'db_connection.php';
 
-// Function to sanitize inputs
-function sanitize_input($data) {
-    return htmlspecialchars(stripslashes(trim($data)));
-}
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // Retrieve form data
+    $name = $_POST['name'] ?? null;
+    $university = $_POST['university'] ?? null;
+    $location = $_POST['location'] ?? null;
+    $budget = $_POST['budget'] ?? null;
+    $admission_process = $_POST['admission_process'] ?? null;
+    $courses = $_POST['courses'] ?? null;
+    $placement = $_POST['placement'] ?? null;
+    $placement_details = $_POST['placement_details'] ?? null;
+    $specialization = $_POST['specialization'] ?? null;
+    $ranking = $_POST['ranking'] ?? null;
+    $facilities = $_POST['facilities'] ?? null;
+    $usp = $_POST['usp'] ?? null;
 
-// Check if data is being sent via POST
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Collect and sanitize form inputs
-    $college_name = sanitize_input($_POST['name']);
-    $location = sanitize_input($_POST['location']);
-    $budget = sanitize_input($_POST['budget']);
-    $courses = sanitize_input($_POST['courses']);  // This should be handled as a list or a string if multiple courses
-    $placement = sanitize_input($_POST['placement']);
-    $specialization = sanitize_input($_POST['specialization']);
-    $ranking = sanitize_input($_POST['ranking']);
-    $facilities = sanitize_input($_POST['facilities']);
-    $usp = sanitize_input($_POST['usp']);
-
-    // Check if college ID exists (for update scenario)
-    if (isset($_POST['college_id']) && !empty($_POST['college_id'])) {  // 'college_id' instead of 'id'
-        $college_id = sanitize_input($_POST['college_id']);
-
-        // Update query for existing college
-        $sql = "UPDATE colleges SET
-                name = ?,
-                location = ?,
-                budget = ?,
-                courses = ?,
-                placement = ?,
-                specialization = ?,
-                ranking = ?,
-                facilities = ?,
-                usp = ?
-                WHERE college_id = ?";  // Use 'college_id'
-
-        // Prepare statement
-        if ($stmt = $conn->prepare($sql)) {
-            // Bind parameters and execute
-            $stmt->bind_param("ssissssssi", $college_name, $location, $budget, $courses, $placement, $specialization, $ranking, $facilities, $usp, $college_id);
-
-            if ($stmt->execute()) {
-                // Success message
-                echo json_encode(["message" => "College updated successfully."]);
-            } else {
-                // Error message
-                echo json_encode(["message" => "Error updating college. Please try again."]);
-            }
-
-            $stmt->close();
-        }
-    } else {
-        // Insert query for new college
-        $sql = "INSERT INTO colleges (name, location, budget, courses, placement, specialization, ranking, facilities, usp)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        // Prepare statement
-        if ($stmt = $conn->prepare($sql)) {
-            // Bind parameters and execute
-            $stmt->bind_param("ssissssss", $college_name, $location, $budget, $courses, $placement, $specialization, $ranking, $facilities, $usp);
-
-            if ($stmt->execute()) {
-                // Success message
-                echo json_encode(["message" => "New college added successfully."]);
-            } else {
-                // Error message
-                echo json_encode(["message" => "Error adding college. Please try again."]);
-            }
-
-            $stmt->close();
-        }
+    // Check if required fields are empty
+    if (!$name || !$university || !$location || !$budget || !$admission_process || !$courses || !$placement_details) {
+        echo json_encode(["success" => false, "message" => "Please fill in all required fields."]);
+        exit();
     }
+
+    // Handle College PDF Upload (File will be uploaded but NOT stored in the database)
+    if (!empty($_FILES['college_pdf']['name'])) {
+        $target_dir = "uploads/";
+        if (!is_dir($target_dir)) {
+            mkdir($target_dir, 0777, true); // Create directory if not exists
+        }
+        move_uploaded_file($_FILES["college_pdf"]["tmp_name"], $target_dir . basename($_FILES["college_pdf"]["name"]));
+    }
+
+    // Prepare and execute SQL query (Matching Database Structure)
+    $stmt = $conn->prepare("INSERT INTO colleges 
+        (name, university, location, budget, admission_process, courses, placement, placement_details, specialization, ranking, facilities, usp) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+    if (!$stmt) {
+        echo json_encode(["success" => false, "message" => "SQL Prepare Error: " . $conn->error]);
+        exit();
+    }
+
+    $stmt->bind_param("ssssssssssss", $name, $university, $location, $budget, $admission_process, $courses, $placement, $placement_details, $specialization, $ranking, $facilities, $usp);
+
+    if ($stmt->execute()) {
+        echo json_encode(["success" => true, "message" => "College saved successfully!"]);
+    } else {
+        echo json_encode(["success" => false, "message" => "SQL Execution Error: " . $stmt->error]);
+    }
+
+    $stmt->close();
+    $conn->close();
+} else {
+    echo json_encode(["success" => false, "message" => "Invalid request method."]);
 }
-
-// Close the connection
-$conn->close();
 ?>
-

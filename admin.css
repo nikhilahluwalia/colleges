@@ -1,90 +1,113 @@
-/* Reset some basic styles */
+/* Updated CSS for admin panel with 3D effect */
+
+/* Reset basic styles */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: Arial, sans-serif;
 }
 
-/* Body Styling */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
+    background-color: #f4f4f9;
     color: #333;
     padding: 20px;
 }
 
-/* Header Styling */
-header {
-    background-color: #004085;
-    color: #fff;
+.container {
+    /* max-width: 1500px; */
+    /* margin: auto; */
+    margin-top: 50px;
+    background: white;
     padding: 20px;
+    border-radius: 8px;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+    transform: translateY(-10px);
+    transition: transform 0.3s ease-in-out;
+}
+
+.container:hover {
+    transform: translateY(-15px);
+}
+
+h1, h2 {
     text-align: center;
-}
-
-header h1 {
-    font-size: 2.5em;
-}
-
-/* Main Content Styling */
-main {
-    margin-top: 20px;
-}
-
-/* Section Styling for forms and tables */
-section {
-    background-color: #fff;
-    padding: 20px;
+    color: #004085;
     margin-bottom: 20px;
+    text-decoration: underline;
+}
+
+/* Form Styling */
+.form-container {
+    background: #fff;
+    padding: 20px;
     border-radius: 8px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
 }
 
-/* Form Styles */
 form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.form-group {
+    width: 48%;
     display: flex;
     flex-direction: column;
 }
 
-form label {
-    margin: 10px 0 5px;
-    font-size: 1.1em;
+.form-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
 }
 
-form input,
-form select,
-form textarea {
+.form-group input {
     padding: 10px;
-    margin-bottom: 15px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 1em;
 }
 
-form button {
-    background-color: #007bff;
+button {
+    background: #007bff;
     color: white;
     padding: 10px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 1.1em;
-    transition: background-color 0.3s ease;
+    font-size: 1em;
+    transition: background 0.3s ease;
 }
 
-form button:hover {
-    background-color: #0056b3;
+button:hover {
+    background: #0056b3;
 }
 
 /* Table Styling */
+.college-list {
+    margin-top: 100px;
+    
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+    transform: translateY(-10px);
+    transition: transform 0.3s ease-in-out;
+}
+
+.college-list:hover {
+    transform: translateY(-15px);
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: 40px;
 }
 
-table th,
-table td {
-    padding: 10px;
+table th, table td {
+    /* padding: 10px; */
     text-align: left;
     border: 1px solid #ddd;
 }
@@ -93,36 +116,38 @@ table th {
     background-color: #f8f9fa;
 }
 
-/* Action Buttons for Edit/Delete */
-table .actions {
+/* Action Buttons */
+.actions {
     display: flex;
     gap: 10px;
 }
 
-table .edit,
-table .delete {
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    text-decoration: none;
-}
 
-table .edit {
-    background-color: #28a745;
+button[onclick^="editCollege"] {
+    background: #28a745;
     color: white;
 }
 
-table .delete {
-    background-color: #dc3545;
+button[onclick^="editCollege"] {
+    background: #218838;
+    transform: scale(1.1);
+}
+
+button[onclick^="deleteCollege"] {
+    background: #dc3545;
     color: white;
+}
+
+button[onclick^="deleteCollege"] {
+    background: #c82333;
+    transform: scale(1.1);
 }
 
 /* Footer Styling */
 footer {
     text-align: center;
     padding: 10px;
-    background-color: #333;
+    background: #333;
     color: white;
     margin-top: 40px;
 }
-
