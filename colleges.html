@@ -4,198 +4,172 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>College Filter</title>
-    <link rel="stylesheet" href="college.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        .filter-section {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        .filter-category {
-            width: 150px;
-            margin-bottom: 20px;
-        }
-        .filter-button {
-            display: block;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border: 1px solid #ccc;
-            cursor: pointer;
-            margin: 5px 0;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .filter-button.selected {
-            background-color: #007bff;
-            color: white;
-        }
-        .selected-filters {
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .college-card {
-            padding: 20px;
-            border: 1px solid #ddd;
-            margin: 10px;
-            border-radius: 5px;
-            background-color: #fafafa;
-            width: 250px;
-            box-sizing: border-box;
-        }
-        .college-card h3 {
-            margin-top: 0;
-        }
-        .college-card p {
-            margin: 5px 0;
-        }
-        .college-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-top: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="colleges.css">
 </head>
 <body>
 
-<h1>College Filter</h1>
+    <div class="heading"><h1>College Filter</h1></div>
 
-<!-- Selected filters display -->
-<div class="selected-filters" id="selected-filters">
-    <p>No filters applied.</p>
-</div>
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+        <button class="filter-toggle" data-category="location">Location</button>
+        <button class="filter-toggle" data-category="budget">Budget</button>
+        <button class="filter-toggle" data-category="courses">Courses</button>
+        <button class="filter-toggle" data-category="placement">Placement</button>
+        <button class="filter-toggle" data-category="specialization">Specialization</button>
+    </div>
 
-<!-- Filter Categories (Location, Budget, etc.) -->
-<div class="filter-section" id="filter-section">
-    <!-- Dynamic Filters will go here -->
-</div>
+    <!-- Dropdown Filter Container -->
+    <div class="filter-dropdowns" id="filter-dropdowns"></div>
 
-<!-- Results -->
-<div id="results" class="college-list">
-    <!-- Matching colleges will be displayed here -->
-</div>
+    <!-- Selected Filters Display -->
+    <div class="selected-filters" id="selected-filters">
+        <p>No filters applied.</p>
+    </div>
 
-<script>
-// Fetch filters (like Location, Budget, etc.) dynamically and populate UI
-document.addEventListener("DOMContentLoaded", function () {
-    const filterSection = document.getElementById("filter-section");
-    const resultsContainer = document.getElementById("results");
-    const selectedFiltersContainer = document.getElementById("selected-filters");
-    let filters = {};
+    <!-- Results -->
+    <div id="results" class="college-list"></div>
 
-    // Fetch all filter categories dynamically (Location, Budget, etc.)
-    fetch('fetch_filters.php')  // Assuming PHP is used for fetching the filter categories from the database
-        .then(response => response.json())
-        .then(data => {
-            // Populate the filter categories section
-            for (let category in data) {
-                let categoryDiv = document.createElement("div");
-                categoryDiv.classList.add("filter-category");
-                let categoryTitle = document.createElement("h3");
-                categoryTitle.textContent = category;
-                categoryDiv.appendChild(categoryTitle);
-                
-                data[category].forEach(value => {
-                    let button = document.createElement("button");
-                    button.classList.add("filter-button");
-                    button.textContent = value;
-                    button.dataset.category = category;
-                    button.dataset.value = value;
-                    categoryDiv.appendChild(button);
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const filterDropdowns = document.getElementById("filter-dropdowns");
+            const resultsContainer = document.getElementById("results");
+            const selectedFiltersContainer = document.getElementById("selected-filters");
+            let filters = {}; 
+        
+            // Fetch filter categories dynamically
+            fetch('fetch_filters.php')
+                .then(response => response.json())
+                .then(data => {
+                    for (let category in data) {
+                        let dropdown = document.createElement("div");
+                        dropdown.classList.add("dropdown");
+                        dropdown.dataset.category = category;
+        
+                        let dropdownContent = '<div class="dropdown-content">';
+        
+                        // Add "All Locations" option for location filter
+                        if (category === "location") {
+                            dropdownContent += `<button class="dropdown-item all-option" data-category="${category}" data-value="All Locations">All Locations</button>`;
+                        }
+        
+                        dropdownContent += data[category].map(value => `
+                            <button class="dropdown-item" data-category="${category}" data-value="${value}">${value}</button>
+                        `).join('');
+        
+                        dropdown.innerHTML = dropdownContent + '</div>';
+                        filterDropdowns.appendChild(dropdown);
+                    }
+        
+                    // Toggle dropdown visibility
+                    document.querySelectorAll(".filter-toggle").forEach(button => {
+                        button.addEventListener("click", function () {
+                            let category = this.dataset.category;
+                            let activeDropdown = document.querySelector(`.dropdown[data-category="${category}"]`);
+        
+                            // Hide all other dropdowns
+                            document.querySelectorAll(".dropdown").forEach(d => {
+                                if (d !== activeDropdown) d.style.display = "none";
+                            });
+        
+                            // Toggle visibility of clicked dropdown
+                            activeDropdown.style.display = activeDropdown.style.display === "flex" ? "none" : "flex";
+                        });
+                    });
+        
+                    // Handle filter selection and deselection
+                    document.querySelectorAll(".dropdown-item").forEach(item => {
+                        item.addEventListener("click", function () {
+                            let category = this.dataset.category;
+                            let value = this.dataset.value;
+        
+                            // If "All Locations" is selected, replace all other locations
+                            if (category === "location" && value === "All Locations") {
+                                filters[category] = ["All Locations"];
+                                document.querySelectorAll(`.dropdown-item[data-category="location"]`).forEach(btn => btn.classList.remove("selected"));
+                                this.classList.add("selected");
+                            } else {
+                                // If "All Locations" was previously selected, remove it
+                                if (filters[category] && filters[category].includes("All Locations")) {
+                                    filters[category] = [];
+                                    document.querySelector(`.dropdown-item.all-option[data-category="location"]`).classList.remove("selected");
+                                }
+        
+                                // Toggle selection
+                                if (!filters[category]) filters[category] = [];
+                                if (filters[category].includes(value)) {
+                                    filters[category] = filters[category].filter(item => item !== value);
+                                    this.classList.remove("selected"); // Remove green color
+                                } else {
+                                    filters[category].push(value);
+                                    this.classList.add("selected"); // Apply green color
+                                }
+                            }
+        
+                            updateSelectedFilters();
+                            fetchFilteredColleges();
+                        });
+                    });
                 });
-
-                filterSection.appendChild(categoryDiv);
-            }
-
-            // Add event listeners to filter buttons
-            document.querySelectorAll(".filter-button").forEach(button => {
-                button.addEventListener("click", function () {
-                    const category = this.dataset.category;
-                    const value = this.dataset.value;
-                    handleFilterSelection(category, value, this);
-                });
-            });
-        });
-
-    // Handle filter selection
-    function handleFilterSelection(category, value, buttonElement) {
-        if (filters[category] && filters[category].includes(value)) {
-            // If already selected, remove it
-            filters[category] = filters[category].filter(item => item !== value);
-            buttonElement.classList.remove("selected");
-        } else {
-            // Otherwise, add to filter
-            if (!filters[category]) filters[category] = [];
-            filters[category].push(value);
-            buttonElement.classList.add("selected");
-        }
-
-        // Update selected filters display
-        updateSelectedFilters();
-        // Fetch colleges based on selected filters
-        fetchFilteredColleges();
-    }
-
-    // Update selected filters row
-    function updateSelectedFilters() {
-        selectedFiltersContainer.innerHTML = "";
-        let selectedCount = 0;
-        for (let category in filters) {
-            filters[category].forEach(value => {
-                let filterDisplay = document.createElement("div");
-                filterDisplay.textContent = `${category}: ${value}`;
-                selectedFiltersContainer.appendChild(filterDisplay);
-                selectedCount++;
-            });
-        }
-
-        if (selectedCount === 0) {
-            selectedFiltersContainer.innerHTML = "<p>No filters applied.</p>";
-        }
-    }
-
-    // Fetch filtered colleges based on selected filters
-    function fetchFilteredColleges() {
-        let queryString = Object.keys(filters).map(key => `${key}=${encodeURIComponent(filters[key].join(','))}`).join("&");
-        fetch(`fetch_colleges.php?${queryString}`)
-            .then(response => response.json())
-            .then(data => {
-                resultsContainer.innerHTML = "";
-                if (data.length === 0) {
-                    resultsContainer.innerHTML = "<p>No colleges found for the selected filters.</p>";
-                } else {
-                    data.forEach(college => {
-                        let collegeCard = document.createElement("div");
-                        collegeCard.classList.add("college-card");
-                        collegeCard.innerHTML = `
-                            <h3>${college.name}</h3>
-                            <p><strong>Location:</strong> ${college.location}</p>
-                            <p><strong>Budget:</strong> ₹${college.budget}</p>
-                            <p><strong>Courses:</strong> ${college.courses}</p>
-                            <p><strong>Placement:</strong> ${college.placement}</p>
-                            <p><strong>Specialization:</strong> ${college.specialization}</p>
-                            <p><strong>Ranking:</strong> ${college.ranking}</p>
-                            <p><strong>Facilities:</strong> ${college.facilities}</p>
-                        `;
-                        resultsContainer.appendChild(collegeCard);
+        
+            function updateSelectedFilters() {
+                selectedFiltersContainer.innerHTML = "";
+                let selectedCount = 0;
+                for (let category in filters) {
+                    filters[category].forEach(value => {
+                        let filterDisplay = document.createElement("span");
+                        filterDisplay.classList.add("filter-tag");
+                        filterDisplay.textContent = `${category}: ${value}`;
+                        selectedFiltersContainer.appendChild(filterDisplay);
+                        selectedCount++;
                     });
                 }
-            })
-            .catch(error => {
-                console.error("Error fetching colleges:", error);
-            });
-    }
-});
-</script>
+        
+                if (selectedCount === 0) {
+                    selectedFiltersContainer.innerHTML = "<p>No filters applied.</p>";
+                }
+            }
+        
+            function fetchFilteredColleges() {
+                let queryString = Object.keys(filters)
+                    .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(filters[key].join(','))}`)
+                    .join("&");
+        
+                fetch(`fetch_colleges.php?${queryString}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsContainer.innerHTML = "";
+                        if (data.length === 0) {
+                            resultsContainer.innerHTML = "<p>No colleges found.</p>";
+                        } else {
+                            data.forEach(college => {
+                                let collegeCard = document.createElement("div");
+                                collegeCard.classList.add("college-card");
+                                collegeCard.innerHTML = `
+                                    <h3>${college.name}</h3>
+
+                                    <p><strong>university:</strong> ${college.university}</p>
+                                    <p><strong>Location:</strong> ${college.location}</p>
+                                    
+                                    <p><strong>Budget:</strong> ₹${college.budget}</p>
+                                    <p><strong>admission_process:</strong> ${college.admission_process}</p>
+                                    <p><strong>Courses:</strong> ${college.courses}</p>
+                                    <p><strong>Placement:</strong> ${college.placement}</p>
+                                    <p><strong>placement_details:</strong> ${college.placement_details}</p>
+                                    <p><strong>Specialization:</strong> ${college.specialization}</p>
+                                    <p><strong>Ranking:</strong> ${college.ranking}</p>
+                                    <p><strong>Facilities:</strong> ${college.facilities}</p>
+                                    <p><strong>USP:</strong> ${college.usp}</p>
+                                `;
+                                resultsContainer.appendChild(collegeCard);
+                            });
+                        }
+                    })
+                    .catch(error => console.error("Error fetching colleges:", error));
+            }
+        });
+        </script>
+        
 
 </body>
 </html>
-

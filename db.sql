@@ -1,6 +1,6 @@
 -- Database Schema for College Filtering System
 
-CREATE DATABASE college_directory;
+
 USE college_directory;
 
 -- Colleges Table
@@ -24,3 +24,19 @@ CREATE TABLE bookmarks (
     FOREIGN KEY (college_id) REFERENCES colleges(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS locations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+
+INSERT INTO locations (name) VALUES 
+('Greater Noida, Uttar Pradesh'),
+('Lucknow, Uttar Pradesh'), 
+('Ghaziabad, Uttar Pradesh'),  
+('Faridabad, Haryana'), 
+('Gurugram, Haryana'),
+('Mumbai, Maharashtra'), 
+('Pune, Maharashtra'), 
+('Dehradun, Uttarakhand'),
+('Delhi, Delhi'),
+('Bangalore, Karnataka');
