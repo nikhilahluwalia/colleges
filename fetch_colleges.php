@@ -1,33 +1,58 @@
 <?php
-include 'db_connection.php';
+header('Content-Type: application/json');
+require 'db_connection.php'; // Ensure database connection
 
 $conditions = [];
-$filter_count = 0;
-$valid_filters = ["location", "budget", "courses", "placement", "specialization"];
 
-foreach ($valid_filters as $filter) {
-    if (isset($_GET[$filter]) && !empty($_GET[$filter])) {
-        $filter_count++;
+// 📝 Handle budget range filtering
+if (!empty($_GET['budget'])) {
+    $budgetRanges = [
+        "0-3" => [0, 300000],
+        "3.1-5" => [300001, 500000],
+        "5.1-7" => [500001, 700000],
+        "7.1-9" => [700001, 900000],
+        "9.1-11" => [900001, 1100000],
+        "11.1-19" => [1100001, 1900000],
+        "19.1-30" => [1900001, 3000000],
+        "30+" => [3000000, PHP_INT_MAX]
+    ];
 
-        $decoded_values = urldecode($_GET[$filter]); 
-        $values = explode(',', $decoded_values);
-
-        if ($filter === "location" && in_array("All Locations", $values)) {
-            continue; // Ignore location filtering if "All Locations" is selected
-        }
-
-        $safe_values = array_map(fn($value) => "'" . $conn->real_escape_string(trim($value)) . "'", $values);
-
-        $conditions[] = "$filter IN (" . implode(',', $safe_values) . ")";
+    $selectedRange = $_GET['budget'];
+    if (isset($budgetRanges[$selectedRange])) {
+        [$minBudget, $maxBudget] = $budgetRanges[$selectedRange];
+        $conditions[] = "budget BETWEEN $minBudget AND $maxBudget";
     }
 }
 
+// 🌍 Handle location filtering
+if (!empty($_GET['location'])) {
+    $location = mysqli_real_escape_string($conn, $_GET['location']);
+    $conditions[] = "location = '$location'";
+}
+
+// 🧩 Handle other filters similarly...
+
+// 📝 Build the final SQL query
 $sql = "SELECT * FROM colleges";
 if (!empty($conditions)) {
-    $sql .= " WHERE " . implode($filter_count > 1 ? " AND " : " OR ", $conditions);
+    $sql .= " WHERE " . implode(" AND ", $conditions);
 }
 
 $result = $conn->query($sql);
-$colleges = $result->num_rows > 0 ? $result->fetch_all(MYSQLI_ASSOC) : [];
+
+$colleges = [];
+while ($row = $result->fetch_assoc()) {
+    $colleges[] = $row;
+}
+
 echo json_encode($colleges);
 $conn->close();
+?>
+
+
+
+
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+?>

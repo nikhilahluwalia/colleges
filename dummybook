@@ -1,0 +1,121 @@
+Insert this below the filter buttons in colleges.html:
+
+html
+Copy
+Edit
+<div class="bookmark-section">
+    <h3>Saved Bookmarks</h3>
+    <div id="bookmarks-container"></div>
+</div>
+
+Insert the following inside <script>:
+
+// Maximum allowed bookmarks
+const MAX_BOOKMARKS = 10;
+
+// Load bookmarks from localStorage on page load
+document.addEventListener("DOMContentLoaded", function () {
+    loadBookmarks();
+});
+
+// Function to save the current filter selection as a bookmark
+function saveBookmark() {
+    if (Object.keys(filters).length === 0) {
+        alert("Please select at least one filter before saving a bookmark.");
+        return;
+    }
+
+    let bookmarks = JSON.parse(localStorage.getItem("bookmarks")) || [];
+
+    if (bookmarks.length >= MAX_BOOKMARKS) {
+        alert("You can only save up to 10 bookmarks.");
+        return;
+    }
+
+    let bookmarkName = prompt("Enter a name for this bookmark:");
+    if (!bookmarkName) return;
+
+    let newBookmark = {
+        name: bookmarkName,
+        filters: { ...filters }
+    };
+
+    bookmarks.push(newBookmark);
+    localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+    loadBookmarks();
+}
+
+// Function to load bookmarks into the UI
+function loadBookmarks() {
+    let bookmarksContainer = document.getElementById("bookmarks-container");
+    bookmarksContainer.innerHTML = "";
+
+    let bookmarks = JSON.parse(localStorage.getItem("bookmarks")) || [];
+    
+    if (bookmarks.length === 0) {
+        bookmarksContainer.innerHTML = "<p>No bookmarks saved.</p>";
+        return;
+    }
+
+    bookmarks.forEach((bookmark, index) => {
+        let bookmarkItem = document.createElement("div");
+        bookmarkItem.classList.add("bookmark-item");
+        bookmarkItem.innerHTML = `
+            <span>${bookmark.name}</span>
+            <button onclick="applyBookmark(${index})">Use</button>
+            <button onclick="deleteBookmark(${index})">X</button>
+        `;
+        bookmarksContainer.appendChild(bookmarkItem);
+    });
+}
+
+// Function to apply a bookmark (restore saved filters)
+function applyBookmark(index) {
+    let bookmarks = JSON.parse(localStorage.getItem("bookmarks")) || [];
+    let selectedBookmark = bookmarks[index];
+
+    if (selectedBookmark) {
+        filters = selectedBookmark.filters;
+        updateSelectedFilters();
+        fetchFilteredColleges();
+    }
+}
+
+// Function to delete a bookmark
+function deleteBookmark(index) {
+    let bookmarks = JSON.parse(localStorage.getItem("bookmarks")) || [];
+    bookmarks.splice(index, 1);
+    localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+    loadBookmarks();
+}
+
+// Add a button to save a bookmark
+let saveBookmarkButton = document.createElement("button");
+saveBookmarkButton.textContent = "Save Bookmark";
+saveBookmarkButton.style = "background-color: blue; color: white; padding: 8px; margin-top: 10px; border-radius: 5px; cursor: pointer;";
+saveBookmarkButton.addEventListener("click", saveBookmark);
+
+document.querySelector(".filter-buttons").appendChild(saveBookmarkButton);
+
+
+
+
+styling
+
+.bookmark-section {
+    margin-top: 20px;
+    padding: 10px;
+    background: #f4f4f4;
+    border-radius: 8px;
+}
+
+.bookmark-item {
+    display: flex;
+    justify-content: space-between;
+    background: white;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    margin-top: 5px;
+    border-radius: 5px;
+}
+

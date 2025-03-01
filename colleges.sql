@@ -47,4 +47,3 @@ CREATE TABLE admin_manage_colleges (
     details TEXT NOT NULL
 );
 
-

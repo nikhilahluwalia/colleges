@@ -53,3 +53,10 @@ if (isset($_POST['college_id']) && !empty($_POST['college_id'])) {
 // Close the database connection
 $conn->close();
 ?>
+
+
+
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+?>

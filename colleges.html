@@ -56,6 +56,7 @@
                         dropdownContent += data[category].map(value => `
                             <button class="dropdown-item" data-category="${category}" data-value="${value}">${value}</button>
                         `).join('');
+				//alert(dropdownContent)
         
                         dropdown.innerHTML = dropdownContent + '</div>';
                         filterDropdowns.appendChild(dropdown);
@@ -147,13 +148,13 @@
                                 collegeCard.classList.add("college-card");
                                 collegeCard.innerHTML = `
                                     <h3>${college.name}</h3>
+                                    <p style = "color: green; font-family: verdana; font-size: 18px;"><strong>Courses:</strong> ${college.courses}</p>
 
                                     <p><strong>university:</strong> ${college.university}</p>
                                     <p><strong>Location:</strong> ${college.location}</p>
                                     
                                     <p><strong>Budget:</strong> ₹${college.budget}</p>
                                     <p><strong>admission_process:</strong> ${college.admission_process}</p>
-                                    <p><strong>Courses:</strong> ${college.courses}</p>
                                     <p><strong>Placement:</strong> ${college.placement}</p>
                                     <p><strong>placement_details:</strong> ${college.placement_details}</p>
                                     <p><strong>Specialization:</strong> ${college.specialization}</p>

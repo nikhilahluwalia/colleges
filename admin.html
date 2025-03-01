@@ -25,40 +25,44 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Location</label>
                     <select id="college-location" name="location" required>
                         <option value="">Select Location</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="college-budget">Budget</label>
+                    <label for="college-budget">Budget (in full amount e.g 225000)</label>
                     <input type="number" id="college-budget" name="budget" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="college-admission">Admission Process</label>
+                    <label for="college-admission">Admission Process (Actual as Per College)</label>
                     <input id="college-admission" name="admission_process" required></input>
                 </div>
 
                 <div class="form-group">
-                    <label for="college-courses">Courses</label>
+                    <label for="college-courses">Course (Only one Course)</label>
                     <input type="text" id="college-courses" name="courses" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="college-placement">Placement</label>
+                    <label for="college-placement">Placement ROI (Single Amount in LPA)</label>
                     <input type="text" id="college-placement" name="placement">
                 </div>
 
                 <div class="form-group">
-                    <label for="college-placement-details">Placement Details</label>
+                    <label for="college-placement-details">Placement Details (min CTC, max CTC, %age Placement, Recruiter Companies)</label>
                     <input id="college-placement-details" name="placement_details" required></input>
                 </div>
 
                 <div class="form-group">
-                    <label for="college-specialization">Specialization</label>
-                    <input type="text" id="college-specialization" name="specialization">
+                    <label>Specialization</label>
+                    <select id="college-specialization" name="specialization[]" multiple required>
+                        <option value="">Select Specialization</option>
+                    </select>
                 </div>
+                
 
                 <div class="form-group">
                     <label for="college-ranking">Ranking</label>
@@ -66,12 +70,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="college-facilities">Facilities</label>
+                    <label for="college-facilities">Facilities (college facilities)</label>
                     <input type="text" id="college-facilities" name="facilities">
                 </div>
 
                 <div class="form-group">
-                    <label for="college-usp">USP</label>
+                    <label for="college-usp">USP (SELLING POINTS)</label>
                     <input type="text" id="college-usp" name="usp">
                 </div>
 
@@ -80,12 +84,19 @@
                     <input type="file" id="college-pdf" name="college_pdf" accept="application/pdf">
                 </div>
 
+                
+
+                <div class="form-group">
+			<input type="hidden" id="college-id" name="college_id">
+                </div>
+
+
                 <button type="button" id="submit-college">Save College</button>
             </form>
         </div>
 
         <!-- College table to display existing colleges -->
-        <div class="college-list">
+        <div class="table-container">
             <h2>Existing Colleges</h2>
             <table id="college-table">
                 <thead>
@@ -96,7 +107,7 @@
                         <th>Budget</th>
                         <th>Admission Process</th>
                         <th>Courses</th>
-                        <th>Placement</th>
+                        <th>Placement ROI</th>
                         <th>Placement Details</th>
                         <th>Specialization</th>
                         <th>Ranking</th>
@@ -145,7 +156,7 @@
                         <td>${college.courses}</td>
                         <td>${college.placement}</td>
                         <td>${college.placement_details}</td>
-                        <td>${college.specialization}</td>
+                        <td>${college.specializations}</td>
                         <td>${college.ranking}</td>
                         <td>${college.facilities}</td>
                         <td>${college.usp}</td>
@@ -176,88 +187,79 @@
             }
         }
 
-
-        
         function editCollege(college_id) {
-    fetch(`get_college.php?college_id=${college_id}`)  // ✅ Fixed parameter name
-        .then(response => response.json())
-        .then(data => {
-            console.log("Fetched College Data:", data); // ✅ Debugging
+            fetch(`get_college.php?college_id=${college_id}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success === false) {
+                    alert(data.message);
+                    return;
+                }
 
-            if (data.success === false) {
-                alert(data.message);
-                return;
-            }
+                document.getElementById("college-name").value = data.name || "";
+                document.getElementById("college-university").value = data.university || "";
+                document.getElementById("college-location").value = data.location || "";
+                document.getElementById("college-budget").value = data.budget || "";
+                document.getElementById("college-admission").value = data.admission_process || "";
+                document.getElementById("college-courses").value = data.courses || "";
+                document.getElementById("college-placement").value = data.placement || "";
+                document.getElementById("college-placement-details").value = data.placement_details || "";
+                
+                // ✅ Set multiple selected specializations
+                let specializationDropdown = document.getElementById("college-specialization");
+                let selectedSpecializations = data.specializations ? data.specializations.split(",") : [];
+                for (let option of specializationDropdown.options) {
+                    option.selected = selectedSpecializations.includes(option.value);
+                }
+                
+                document.getElementById("college-ranking").value = data.ranking || "";
+                document.getElementById("college-facilities").value = data.facilities || "";
+                document.getElementById("college-usp").value = data.usp || "";
 
-            // Debugging: Check each field's value before setting
-            console.log("Setting form values...");
-            console.log("Name:", data.name);
-            console.log("University:", data.university);
-            console.log("Location:", data.location);
-            console.log("Budget:", data.budget);
-            console.log("Admission Process:", data.admission_process);
-            console.log("Courses:", data.courses);
-            console.log("Placement:", data.placement);
-            console.log("Placement Details:", data.placement_details);
-            console.log("Specialization:", data.specialization);
-            console.log("Ranking:", data.ranking);
-            console.log("Facilities:", data.facilities);
-            console.log("USP:", data.usp);
+                document.getElementById("college-id").value = college_id;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            })
+            .catch(error => console.error("Error fetching college:", error));
+        }
 
-            // Set form fields
-            document.getElementById("college-name").value = data.name || "";
-            document.getElementById("college-university").value = data.university || "";
-            document.getElementById("college-location").value = data.location || "";
-            document.getElementById("college-budget").value = data.budget || "";
-            document.getElementById("college-admission").value = data.admission_process || "";
-            document.getElementById("college-courses").value = data.courses || "";
-            document.getElementById("college-placement").value = data.placement || "";
-            document.getElementById("college-placement-details").value = data.placement_details || "";
-            document.getElementById("college-specialization").value = data.specialization || "";
-            document.getElementById("college-ranking").value = data.ranking || "";
-            document.getElementById("college-facilities").value = data.facilities || "";
-            document.getElementById("college-usp").value = data.usp || "";
+        function fetchLocations() {
+            fetch("fetch_locations.php")
+            .then(response => response.json())
+            .then(data => {
+                let locationDropdown = document.getElementById("college-location");
+                locationDropdown.innerHTML = '<option value="">Select Location</option>';
 
-            // Set hidden input for college_id (if not already present)
-            let hiddenInput = document.getElementById("college-id");
-            if (!hiddenInput) {
-                hiddenInput = document.createElement("input");
-                hiddenInput.type = "hidden";
-                hiddenInput.id = "college-id";
-                hiddenInput.name = "college_id";
-                document.getElementById("college-form").appendChild(hiddenInput);
-            }
-            hiddenInput.value = college_id; 
+                data.forEach(location => {
+                    let option = document.createElement("option");
+                    option.value = location.name;
+                    option.textContent = location.name;
+                    locationDropdown.appendChild(option);
+                });
+            })
+            .catch(error => console.error("Error fetching locations:", error));
+        }
 
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        })
-        .catch(error => console.error("Error fetching college:", error));
-}
+        function fetchSpecializations() {
+            fetch("fetch_specializations.php")
+            .then(response => response.json())
+            .then(data => {
+                let specializationDropdown = document.getElementById("college-specialization");
+                specializationDropdown.innerHTML = "";
+                
+                data.forEach(specialization => {
+                    let option = document.createElement("option");
+                    option.value = specialization.name;
+                    option.textContent = specialization.name;
+                    specializationDropdown.appendChild(option);
+                });
+            })
+            .catch(error => console.error("Error fetching specializations:", error));
+        }
 
-function fetchLocations() {
-    fetch("fetch_locations.php")
-    .then(response => response.json())
-    .then(data => {
-        let locationDropdown = document.getElementById("college-location");
-        locationDropdown.innerHTML = '<option value="">Select Location</option>'; // Default option
-
-        data.forEach(location => {
-            let option = document.createElement("option");
-            option.value = location.name;
-            option.textContent = location.name;
-            locationDropdown.appendChild(option);
-        });
-    })
-    .catch(error => console.error("Error fetching locations:", error));
-}
-
-
-
-   
+        fetchSpecializations();
         fetchColleges();
         fetchLocations();
+</script>
 
-    </script>
 </body>
 </html>
