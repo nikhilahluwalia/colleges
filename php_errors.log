@@ -1,1 +1,28 @@
 [28-Feb-2025 14:06:58 Asia/Calcutta] PHP Parse error:  syntax error, unexpected token "<<", expecting end of file in /var/www/html/colleges/fetch_filters.php on line 3
+[01-Mar-2025 18:10:17 Asia/Calcutta] PHP Warning:  Undefined variable $query in /var/www/html/colleges/fetch_filters.php on line 28
+[01-Mar-2025 18:10:17 Asia/Calcutta] PHP Fatal error:  Uncaught Error: Method name must be a string in /var/www/html/colleges/fetch_filters.php:28
+Stack trace:
+#0 {main}
+  thrown in /var/www/html/colleges/fetch_filters.php on line 28
+[01-Mar-2025 18:12:23 Asia/Calcutta] PHP Warning:  Undefined variable $query in /var/www/html/colleges/fetch_filters.php on line 28
+[01-Mar-2025 18:12:23 Asia/Calcutta] PHP Fatal error:  Uncaught Error: Method name must be a string in /var/www/html/colleges/fetch_filters.php:28
+Stack trace:
+#0 {main}
+  thrown in /var/www/html/colleges/fetch_filters.php on line 28
+[01-Mar-2025 18:13:05 Asia/Calcutta] PHP Warning:  Cannot modify header information - headers already sent by (output started at /var/www/html/colleges/db_connection.php:13) in /var/www/html/colleges/fetch_filters.php on line 3
+[01-Mar-2025 18:13:05 Asia/Calcutta] PHP Warning:  Undefined variable $query in /var/www/html/colleges/fetch_filters.php on line 29
+[01-Mar-2025 18:13:05 Asia/Calcutta] PHP Fatal error:  Uncaught Error: Method name must be a string in /var/www/html/colleges/fetch_filters.php:29
+Stack trace:
+#0 {main}
+  thrown in /var/www/html/colleges/fetch_filters.php on line 29
+[01-Mar-2025 18:14:40 Asia/Calcutta] PHP Warning:  Cannot modify header information - headers already sent by (output started at /var/www/html/colleges/db_connection.php:13) in /var/www/html/colleges/fetch_filters.php on line 3
+[01-Mar-2025 18:15:26 Asia/Calcutta] PHP Warning:  Cannot modify header information - headers already sent by (output started at /var/www/html/colleges/db_connection.php:13) in /var/www/html/colleges/fetch_filters.php on line 3
+[01-Mar-2025 19:18:13 Asia/Calcutta] PHP Warning:  Cannot modify header information - headers already sent by (output started at /var/www/html/colleges/db_connection.php:13) in /var/www/html/colleges/fetch_filters.php on line 3
+[01-Mar-2025 19:18:13 Asia/Calcutta] PHP Warning:  Undefined variable $specializationQuery in /var/www/html/colleges/fetch_filters.php on line 43
+[01-Mar-2025 19:18:13 Asia/Calcutta] PHP Fatal error:  Uncaught ValueError: mysqli::query(): Argument #1 ($query) cannot be empty in /var/www/html/colleges/fetch_filters.php:43
+Stack trace:
+#0 /var/www/html/colleges/fetch_filters.php(43): mysqli->query()
+#1 {main}
+  thrown in /var/www/html/colleges/fetch_filters.php on line 43
+[01-Mar-2025 19:19:38 Asia/Calcutta] PHP Warning:  Cannot modify header information - headers already sent by (output started at /var/www/html/colleges/db_connection.php:13) in /var/www/html/colleges/fetch_filters.php on line 3
+[01-Mar-2025 19:20:16 Asia/Calcutta] PHP Warning:  Cannot modify header information - headers already sent by (output started at /var/www/html/colleges/db_connection.php:13) in /var/www/html/colleges/fetch_filters.php on line 3

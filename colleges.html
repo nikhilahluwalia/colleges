@@ -40,37 +40,88 @@
             let filters = {}; 
        
 	//handle clear all filters
-	document.getElementById("clear-filters").addEventListener("click", function () {
+	    document.getElementById("clear-filters").addEventListener("click", function () {
         	filters = {}; // Reset filters
         	document.querySelectorAll(".dropdown-item.selected").forEach(item => item.classList.remove("selected")); // Deselect buttons
         	updateSelectedFilters(); // Refresh selected filters display
         	fetchFilteredColleges(); // Reload results
-    	}); 
+    	    }); 
+
             // Fetch filter categories dynamically
-            fetch('fetch_filters.php')
-                .then(response => response.json())
-                .then(data => {
-                    for (let category in data) {
-                        let dropdown = document.createElement("div");
-                        dropdown.classList.add("dropdown");
-                        dropdown.dataset.category = category;
+            function fetchFilters(selectedFilters = {}) {
+	 	let queryString = Object.keys(selectedFilters)
+            	.map(key => `${encodeURIComponent(key)}=${encodeURIComponent(selectedFilters[key].join('|'))}`)
+            	.join("&");
+				
+		fetch(`fetch_filters.php?${queryString}`)
+                	.then(response => response.json())
+                	.then(data => {
+				console.log("Fetched Filter Data:", data); // Debugging Log
+                        	// Clear and update the filter dropdowns dynamically
+		       		//filterDropdowns.innerHTML = ""; 
+                    
+				for (let category in data) {
+                        		let dropdown = document.createElement("div");
+                        		dropdown.classList.add("dropdown");
+                        		dropdown.dataset.category = category;
         
-                        let dropdownContent = '<div class="dropdown-content">';
+                        		let dropdownContent = '<div class="dropdown-content">';
+                			// Ensure filter options are properly populated
+					if (data[category].length === 0) {
+                    				dropdownContent += `<p>No options available</p>`;
+                			} else {
+                    				dropdownContent += data[category].map(value => `
+                        			<button class="dropdown-item" data-category="${category}" data-value="${value}">${value}</button>
+                    				`).join('');
+                			}
+	    
         
-                        // Add "All Locations" option for location filter
-                        if (category === "location") {
-                            dropdownContent += `<button class="dropdown-item all-option" data-category="${category}" data-value="All Locations">All Locations</button>`;
-                        }
+                        		// Add "All Locations" option for location filter
+                        		if (category === "location") {
+                            			dropdownContent += `<button class="dropdown-item all-option" data-category="${category}" data-value="All Locations">All Locations</button>`;
+                        		}
         
-                        dropdownContent += data[category].map(value => `
-                            <button class="dropdown-item" data-category="${category}" data-value="${value}">${value}</button>
-                        `).join('');
-				//alert(dropdownContent)
+                        		// commenting these lines for now nikhil 1march 658pm
+	   				//dropdownContent += data[category].map(value => `
+                            		//<button class="dropdown-item" data-category="${category}" data-value="${value}">${value}</button>
+                        		//`).join('');
+					//alert(dropdownContent)
         
-                        dropdown.innerHTML = dropdownContent + '</div>';
-                        filterDropdowns.appendChild(dropdown);
-                    }
+                        		dropdown.innerHTML = dropdownContent + '</div>';
+                        		document.getElementById("filter-dropdowns").appendChild(dropdown);
+					//filterDropdowns.appendChild(dropdown);
+                    		}
+				
+				attachFilterListeners(); // Reattach event listeners to the new dropdown buttons
+			})
+
+			.catch(error => console.error("Error fetching filters:", error));
+		}
         
+		// 🔹 Attach event listeners to filter button
+		function attachFilterListeners() {
+        		document.querySelectorAll(".dropdown-item").forEach(item => {
+            			item.addEventListener("click", function () {
+                		let category = this.dataset.category;
+                		let value = this.dataset.value;
+
+               			if (!filters[category]) filters[category] = [];
+
+               			if (filters[category].includes(value)) {
+              				filters[category] = filters[category].filter(item => item !== value);
+               				this.classList.remove("selected");
+               			} else {
+               				filters[category].push(value);
+               				this.classList.add("selected");
+               			}
+
+               			updateSelectedFilters();
+               			fetchFilters(filters); // 🔹 Update filters dynamically
+               			fetchFilteredColleges(); // 🔹 Fetch filtered college results
+       	 			});
+       			});
+    		    }
+
                     // Toggle dropdown visibility
                     document.querySelectorAll(".filter-toggle").forEach(button => {
                         button.addEventListener("click", function () {
@@ -120,7 +171,8 @@
                             fetchFilteredColleges();
                         });
                     });
-                });
+                // comment this line by nikhil at 1 march 701 ppm
+                //});
         
             function updateSelectedFilters() {
                 selectedFiltersContainer.innerHTML = "";
@@ -158,7 +210,8 @@
 		
 		// AND logic across different categories
 		let queryString = queryParts.join("&");
-		alert(queryString)
+		//alert(queryString)
+		console.log("Query String:", queryString); // Debugging log
         
                 fetch(`fetch_colleges.php?${queryString}`)
                     .then(response => response.json())
@@ -192,8 +245,10 @@
                     })
                     .catch(error => console.error("Error fetching colleges:", error));
             }
-        });
-        </script>
+	// 🔹 Load Filters When Page Starts
+    	fetchFilters();
+    });
+</script>
         
 
 </body>

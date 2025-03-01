@@ -1,62 +1,71 @@
 <?php
+include 'db_connection.php';
 header('Content-Type: application/json');
 require 'db_connection.php'; // Ensure database connection is established
 
-$filters = [];
-//$categories = ['courses', 'placement','specialization']; // Budget handled separately
-$categories = ['courses', 'placement']; // Budget handled separately
-
-// Fetch budget filters from budget table
-
-$budgetRanges = [
-    "0-3" => [0, 300000],
-    "3.1-5" => [300001, 500000],
-    "5.1-7" => [500001, 700000],
-    "7.1-9" => [700001, 900000],
-    "9.1-11" => [900001, 1100000],
-    "11.1-19" => [1100001, 1900000],
-    "19.1-30" => [1900001, 3000000],
-    "30+" => [3000000, PHP_INT_MAX]
+$filters = [
+    "location" => [],
+    "budget" => [],
+    "courses" => [],
+    "specialization" => [],
+    "placement" => []
 ];
-$filters['budget'] = array_keys($budgetRanges); // Send range labels
 
+// **🔹 Process Selected Filters for Dynamic Queries**
 
-// 🎯 Predefined Specializtion
+$conditions = [];
+
+foreach ($_GET as $key => $value) {
+	$values = explode("|", $value);
+	$escapedValues = array_map(fn($v) => "'" . $conn->real_escape_string(trim($v)) . "'", $values);
+	$conditions[$key] = "(" . implode(", ", $escapedValues) . ")";
+	}	
+
+$whereClause = !empty($conditions) ? " WHERE " . implode(" AND ", $conditions) : "";
+echo $whereClause;
+
 
 // Fetch location filters from 'locations' table
-$locationQuery = "SELECT name FROM locations ORDER BY name ASC";
-$locationResult = mysqli_query($conn, $locationQuery);
-$locationValues = [];
-
-while ($row = mysqli_fetch_assoc($locationResult)) {
-    $locationValues[] = $row['name'];
+$locationQuery = "SELECT DISTINCT name FROM locations";
+if (!empty($whereClause)) {
+	$locationQuery = "SELECT DISTINCT l.name FROM locations l JOIN colleges c ON FIND_IN_SET(l.name, c.location) > 0 $whereClause ORDER BY l.name ASC";
 }
-$filters['location'] = $locationValues;
+//echo $locationQuery;
+$result = $conn->query($locationQuery);
+while ($row = $result->fetch_assoc()) {
+    $filters["location"][] = $row["name"];
+}
 
 
 // Fetch specialization filters from 'specialization' table/
-$specializationQuery = "SELECT name FROM specializations ORDER BY name";
-$specializationResult = mysqli_query($conn, $specializationQuery);
-$specializationValues = [];
-
-while ($row = mysqli_fetch_assoc($specializationResult)) {
-  $specializationValues[] = $row['name'];
+$specializationQuery = "SELECT DISTINCT name FROM specializations";
+if (!empty($whereClause)) {
+	$specializationQuery = "SELECT DISTINCT s.name from specializations s JOIN colleges c ON FIND_IN_SET(s.name, c.specialization) > 0 $whereClause ORDER BY s.name ASC";
 }
-$filters['specialization'] = $specializationValues;
+$result = $conn->query($specializationQuery);
+while ($row = $result->fetch_assoc()) {
+    $filters["specialization"][] = $row["name"];
+}
 //echo $filters['specialization'] ;
 
+$budgetQuery = "SELECT DISTINCT value FROM budget $whereClause";
+$result = $conn->query($budgetQuery);
+while ($row = $result->fetch_assoc()) {
+    $filters["budget"][] = $row["value"];
+}
 
+// **🔹 Fetch Courses Based on Selected Filters**
+$coursesQuery = "SELECT DISTINCT courses FROM colleges $whereClause";
+$result = $conn->query($coursesQuery);
+while ($row = $result->fetch_assoc()) {
+    $filters["courses"][] = $row["courses"];
+}
 
-// Fetch other filters from 'colleges' table
-foreach ($categories as $category) {
-    $query = "SELECT DISTINCT $category FROM colleges ORDER BY $category";
-    $result = mysqli_query($conn, $query);
-
-    $filterValues = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        $filterValues[] = $row[$category];
-    }
-    $filters[$category] = $filterValues;
+// **🔹 Fetch Placement Based on Selected Filters**
+$placementQuery = "SELECT DISTINCT placement FROM colleges $whereClause";
+$result = $conn->query($placementQuery);
+while ($row = $result->fetch_assoc()) {
+    $filters["placement"][] = $row["placement"];
 }
 
 echo json_encode($filters);
