@@ -2,43 +2,64 @@
 header('Content-Type: application/json');
 require 'db_connection.php'; // Ensure database connection
 
-$conditions = [];
+$filters = [];
 
-// 📝 Handle budget range filtering
-if (!empty($_GET['budget'])) {
-    $budgetRanges = [
-        "0-3" => [0, 300000],
-        "3.1-5" => [300001, 500000],
-        "5.1-7" => [500001, 700000],
-        "7.1-9" => [700001, 900000],
-        "9.1-11" => [900001, 1100000],
-        "11.1-19" => [1100001, 1900000],
-        "19.1-30" => [1900001, 3000000],
-        "30+" => [3000000, PHP_INT_MAX]
-    ];
-
-    $selectedRange = $_GET['budget'];
-    if (isset($budgetRanges[$selectedRange])) {
-        [$minBudget, $maxBudget] = $budgetRanges[$selectedRange];
-        $conditions[] = "budget BETWEEN $minBudget AND $maxBudget";
-    }
-}
 
 // 🌍 Handle location filtering
-if (!empty($_GET['location'])) {
-    $location = mysqli_real_escape_string($conn, $_GET['location']);
-    $conditions[] = "location = '$location'";
-}
+//if (!empty($_GET['location'])) {
+  //  $location = mysqli_real_escape_string($conn, $_GET['location']);
+   // $filters[] = "location = '$location'";
+//}
 
 // 🧩 Handle other filters similarly...
-
-// 📝 Build the final SQL query
-$sql = "SELECT * FROM colleges";
-if (!empty($conditions)) {
-    $sql .= " WHERE " . implode(" AND ", $conditions);
+//for displaying colleges
+foreach ($_GET as $key => $value) {
+	//Cover the OR values into array
+	$values = explode("|", $value);
+	//handling for budget
+	if ($key === "budget") {
+		$budgetConditions = [];
+		foreach ($values as $budgetRange) {
+			$rangeParts = explode("-", $budgetRange);
+			if (count($rangeParts) === 2) {
+				$minBudget = floatval(trim($rangeParts[0])) * 100000; // Convert lakhs to full amount
+            			$maxBudget = floatval(trim($rangeParts[1])) * 100000;
+            			$budgetConditions[] = "(budget BETWEEN $minBudget AND $maxBudget)";
+        		}
+    		}
+		if (!empty($budgetConditions)) {
+        		$filters[] = "(" . implode(" OR ", $budgetConditions) . ")";
+    		}
+	
+	// handling for specializtion 
+	} elseif ($key === "specialization") {
+        	// Handle specialization filtering using LIKE
+        	$specializationConditions = [];
+        	foreach ($values as $specialization) {
+            		$escapedSpecialization = $conn->real_escape_string(trim($specialization));
+            		$specializationConditions[] = "specialization LIKE '%$escapedSpecialization%'";
+        	}
+        	if (!empty($specializationConditions)) {
+            		$filters[] = "(" . implode(" OR ", $specializationConditions) . ")";
+        	}
+	} else {
+		$escapedValues = array_map(fn($v) => "'" . trim($conn->real_escape_string($v)) . "'", $values);
+		$filters[] = "$key IN (" . implode(", ", $escapedValues) . ")";
+	}
 }
 
-$result = $conn->query($sql);
+// 📝 Build the final SQL query
+$query = "SELECT * FROM colleges";
+if (!empty($filters)) {
+    $query .= " WHERE " . implode(" AND ", $filters);
+}
+
+// Debugging: Output the generated query
+//echo json_encode(["debug_query" => $query]);
+//exit; // Stop script execution to only return query for debugging
+
+
+$result = $conn->query($query);
 
 $colleges = [];
 while ($row = $result->fetch_assoc()) {

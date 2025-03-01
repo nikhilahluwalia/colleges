@@ -141,9 +141,24 @@
             }
         
             function fetchFilteredColleges() {
-                let queryString = Object.keys(filters)
-                    .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(filters[key].join(','))}`)
-                    .join("&");
+		//define the differen parts for the query
+		let queryParts = [];
+
+		for (let category in filters) {
+			if (filters[category].length > 0) {
+			//Join values with OR LOgic for the same category
+			let filterQuery = `${encodeURIComponent(category)}=${encodeURIComponent(filters[category].join('|'))}`;
+			queryParts.push(filterQuery);
+			}
+		}
+		//old code now masking
+		//let queryString = Object.keys(filters)
+                  //  .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(filters[key].join(','))}`)
+                    //.join("&");
+		
+		// AND logic across different categories
+		let queryString = queryParts.join("&");
+		alert(queryString)
         
                 fetch(`fetch_colleges.php?${queryString}`)
                     .then(response => response.json())
