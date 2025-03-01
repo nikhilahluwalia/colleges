@@ -17,6 +17,8 @@
         <button class="filter-toggle" data-category="courses">Courses</button>
         <button class="filter-toggle" data-category="placement">Placement</button>
         <button class="filter-toggle" data-category="specialization">Specialization</button>
+	<button id="clear-filters" style="background-color: #FF9800; color: white; border: none; padding: 10px 15px;
+        cursor: pointer; margin-left: 10px; border-radius: 5px;">Clear All Filters</button>
     </div>
 
     <!-- Dropdown Filter Container -->
@@ -36,7 +38,14 @@
             const resultsContainer = document.getElementById("results");
             const selectedFiltersContainer = document.getElementById("selected-filters");
             let filters = {}; 
-        
+       
+	//handle clear all filters
+	document.getElementById("clear-filters").addEventListener("click", function () {
+        	filters = {}; // Reset filters
+        	document.querySelectorAll(".dropdown-item.selected").forEach(item => item.classList.remove("selected")); // Deselect buttons
+        	updateSelectedFilters(); // Refresh selected filters display
+        	fetchFilteredColleges(); // Reload results
+    	}); 
             // Fetch filter categories dynamically
             fetch('fetch_filters.php')
                 .then(response => response.json())
