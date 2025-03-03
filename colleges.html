@@ -53,6 +53,7 @@
             	.map(key => `${encodeURIComponent(key)}=${encodeURIComponent(selectedFilters[key].join('|'))}`)
             	.join("&");
 				
+				//alert(queryString)
 		fetch(`fetch_filters.php?${queryString}`)
                 	.then(response => response.json())
                 	.then(data => {

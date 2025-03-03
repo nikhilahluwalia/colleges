@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteBase /colleges/
+
+# Only rewrite if the query string does NOT contain internal=true
+RewriteCond %{QUERY_STRING} !(^|&)internal=true(&|$) [NC]
+RewriteRule ^colleges\.html$ colleges.php [L,R=302]

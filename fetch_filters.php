@@ -15,6 +15,7 @@ $filters = [
 
 $conditions = [];
 
+
 foreach ($_GET as $key => $value) {
 	$values = explode("|", $value);
 	$escapedValues = array_map(fn($v) => "'" . $conn->real_escape_string(trim($v)) . "'", $values);
