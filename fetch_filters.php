@@ -19,10 +19,25 @@ $conditions = [];
 
 foreach ($_GET as $key => $value) {
 	$values = explode("|", $value);
-	$escapedValues = array_map(fn($v) => "'" . $conn->real_escape_string(trim($v)) . "'", $values);
-	//$conditions[$key] = "(" . implode(", ", $escapedValues) . ")";
-	$conditions[$key] = "$key IN (" . implode(", ", $escapedValues) . ")";
+	if ($key === "budget") {
+        	$budgetConditions = [];
+        	foreach ($values as $budgetRange) {
+            		$rangeParts = explode("-", $budgetRange);
+            		if (count($rangeParts) === 2) {
+                		$minBudget = floatval(trim($rangeParts[0])) * 100000;
+                		$maxBudget = floatval(trim($rangeParts[1])) * 100000;
+                		$budgetConditions[] = "(budget BETWEEN $minBudget AND $maxBudget)";
+            		}
+        	}
+        	if (!empty($budgetConditions)) {
+            		$conditions[] = "(" . implode(" OR ", $budgetConditions) . ")";
+        	}
+    	} else {
+        	// For other keys, use the normal IN condition
+		$escapedValues = array_map(fn($v) => "'" . $conn->real_escape_string(trim($v)) . "'", $values);
+		$conditions[$key] = "$key IN (" . implode(", ", $escapedValues) . ")";
 	}	
+}
 
 $whereClause = !empty($conditions) ? " WHERE " . implode(" AND ", $conditions) : "";
 //echo "<br/>";
