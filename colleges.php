@@ -1,6 +1,10 @@
 <?php
 
 session_start();
+if (!isset($_SESSION["user"])) {
+    header("Location: login.html");
+    exit();
+}
 
 // 🔐 Secure session settings
 ini_set("session.cookie_httponly", 1); // Prevent JavaScript from accessing cookies
@@ -25,11 +29,6 @@ function checkUserSession($timeout = 1800) {
     // Update last activity timestamp
     $_SESSION["last_activity"] = time();
 
-    // Check if user is logged in
-    if (!isset($_SESSION["user"])) {
-        header("Location: login.html");
-        exit();
-    }
 }
 
 ?>
