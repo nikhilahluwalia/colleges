@@ -57,7 +57,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Specialization</label>
+                    <label>Specializations</label>
                     <select id="college-specialization" name="specialization[]" multiple required>
                         <option value="">Select Specialization</option>
                     </select>
@@ -109,7 +109,7 @@
                         <th>Courses</th>
                         <th>Placement ROI</th>
                         <th>Placement Details</th>
-                        <th>Specialization</th>
+                        <th>Specializations</th>
                         <th>Ranking</th>
                         <th>Facilities</th>
                         <th>USP</th>
@@ -156,7 +156,7 @@
                         <td>${college.courses}</td>
                         <td>${college.placement}</td>
                         <td>${college.placement_details}</td>
-                        <td>${college.specializations}</td>
+                        <td>${college.specialization}</td>
                         <td>${college.ranking}</td>
                         <td>${college.facilities}</td>
                         <td>${college.usp}</td>
@@ -195,6 +195,7 @@
                     alert(data.message);
                     return;
                 }
+                    alert(data.name);
 
                 document.getElementById("college-name").value = data.name || "";
                 document.getElementById("college-university").value = data.university || "";
@@ -207,7 +208,7 @@
                 
                 // ✅ Set multiple selected specializations
                 let specializationDropdown = document.getElementById("college-specialization");
-                let selectedSpecializations = data.specializations ? data.specializations.split(",") : [];
+                let selectedSpecializations = data.specialization ? data.specialization.split(",") : [];
                 for (let option of specializationDropdown.options) {
                     option.selected = selectedSpecializations.includes(option.value);
                 }

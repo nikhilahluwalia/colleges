@@ -15,6 +15,7 @@ if (isset($_GET['college_id']) && !empty($_GET['college_id'])) {
     $stmt->bind_param("i", $college_id);
     $stmt->execute();
     $result = $stmt->get_result();
+    //var_dump($result);
 
     // Check if the query returns any results
     if ($result->num_rows > 0) {

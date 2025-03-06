@@ -129,7 +129,7 @@ button[onclick^="editCollege"] {
 }
 
 button[onclick^="editCollege"] {
-    background: #218838;
+    font-size: 1em;
     transform: scale(1.1);
 }
 
