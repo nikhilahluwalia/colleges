@@ -1,8 +1,9 @@
 <?php
-$servername = "localhost";
+$servername = "127.0.0.1";
 $username = "root";  
-$password = "Asdf@1234";  
-$dbname = "college_directory";  // If you named your DB something else, update this
+//$password = "Asdf@1234";  
+$password = "1qcolleges@Wroot3e";
+$dbname = "colleges";  // If you named your DB something else, update this
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
